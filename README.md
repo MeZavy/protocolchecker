@@ -1,4 +1,4 @@
 # ProtocolChecker
 Checks a minecraft servers protocol number
 ----
-Working!
+Working! Please leave suggestions in issues!
