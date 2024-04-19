@@ -6,87 +6,186 @@
   <title>Minecraft Server Protocol Version Checker</title>
   <style>
     body {
-      background-color: #1e1e1e;
+      background-color: #212121;
       color: #ffffff;
-      font-family: Arial, sans-serif;
+      font-family: 'Minecraft', sans-serif;
+      margin: 0;
+      padding: 0;
     }
     #container {
       width: 80%;
       margin: 0 auto;
       text-align: center;
+      padding-top: 20px;
     }
-    #textInput {
+    h1 {
+      font-size: 36px;
+      margin-bottom: 20px;
+      text-transform: uppercase;
+    }
+    .inputField {
       width: 100%;
       padding: 10px;
       margin-bottom: 10px;
       border: none;
       border-radius: 5px;
-      background-color: #2e2e2e;
+      background-color: #2c2c2c;
       color: #ffffff;
+      font-family: 'Minecraft', sans-serif;
     }
-    #checkButton {
+    .button {
       padding: 10px 20px;
-      background-color: #4CAF50;
+      background-color: #00aa00;
       border: none;
       border-radius: 5px;
       cursor: pointer;
       color: #ffffff;
       transition: background-color 0.3s;
+      font-family: 'Minecraft', sans-serif;
     }
-    #checkButton:hover {
-      background-color: #45a049;
+    .button:hover {
+      background-color: #008800;
     }
-    #protocolVersion {
-      font-size: 18px;
+    #outputBox {
+      background-color: #2c2c2c;
+      padding: 20px;
+      border-radius: 5px;
       margin-top: 20px;
+    }
+    #protocolOutput {
+      font-size: 18px;
+      margin-bottom: 10px;
+      font-family: 'Minecraft', sans-serif;
+    }
+    #copyButton {
+      background-color: #00aa00;
+      border: none;
+      color: #ffffff;
+      padding: 10px 20px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+      margin-top: 10px;
+      cursor: pointer;
+      border-radius: 5px;
+      transition: background-color 0.3s;
+      font-family: 'Minecraft', sans-serif;
+    }
+    #copyButton:hover {
+      background-color: #008800;
+    }
+    #commandBox {
+      background-color: #2c2c2c;
+      padding: 20px;
+      border-radius: 5px;
+      margin-top: 20px;
+      text-align: left;
+    }
+    #commandOutput {
+      font-size: 16px;
+      margin-bottom: 10px;
+      font-family: 'Minecraft', sans-serif;
     }
   </style>
 </head>
 <body>
   <div id="container">
     <h1>Minecraft Server Protocol Version Checker</h1>
-    <textarea id="textInput" rows="4" placeholder="Paste the text with the Minecraft server IP"></textarea>
-    <button id="checkButton" onclick="checkServer()">Check Server</button>
-    <p id="protocolVersion"></p>
+    <input type="text" id="textInput" class="inputField" placeholder="Paste the Minecraft server IP">
+    <input type="text" id="usernameInput" class="inputField" placeholder="Bot username (optional)">
+    <input type="number" id="timesInput" class="inputField" placeholder="Number of times">
+    <button id="checkButton" class="button" onclick="checkServer()">Check Protocol</button>
+    <button id="generateButton" class="button" onclick="generateCommand()">Generate Command</button>
+    <div id="commandBox" style="display:none;">
+      <p id="commandOutput"></p>
+    </div>
+    <div id="outputBox" style="display:none;">
+      <p id="protocolOutput"></p>
+      <button id="copyButton" onclick="copyProtocol()">Copy Protocol</button>
+    </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/mcstatus"></script>
   <script>
-    function checkServer() {
-      var inputText = document.getElementById("textInput").value;
-      var serverIP = extractIP(inputText);
-      console.log("Extracted IP:", serverIP);
-      if (serverIP) {
-        getProtocolVersion(serverIP);
-      } else {
-        document.getElementById("protocolVersion").innerText = "No IP address found in the input text.";
+    async function checkServer() {
+      const inputText = document.getElementById("textInput").value.trim();
+      const serverIP = extractIP(inputText);
+      if (!serverIP) {
+        document.getElementById("protocolOutput").innerText = "Invalid IP address.";
+        return;
+      }
+
+      try {
+        const response = await fetch(`https://api.mcsrvstat.us/2/${serverIP}`);
+        if (!response.ok) throw new Error('Network response was not ok.');
+        const data = await response.json();
+        console.log(data);
+        if (data.protocol !== undefined) {
+          document.getElementById("protocolOutput").innerText = "Protocol Version: " + data.protocol;
+          document.getElementById("outputBox").style.display = "block";
+        } else {
+          document.getElementById("protocolOutput").innerText = "Error: Protocol version not available.";
+        }
+      } catch (error) {
+        console.error(error);
+        document.getElementById("protocolOutput").innerText = "Error: Unable to fetch server information.";
       }
     }
 
     function extractIP(text) {
-      var ipPattern = /\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b/;
-      var match = text.match(ipPattern);
-      console.log("Matched IP:", match);
-      if (match) {
-        return match[0];
-      } else {
-        return null;
-      }
+      const ipPattern = /\b(?:\d{1,3}\.){3}\d{1,3}\b/;
+      const match = text.match(ipPattern);
+      return match ? match[0] : null;
     }
 
-    function getProtocolVersion(serverIP) {
-      var server = new McServerStatus(serverIP);
-      server.ping(function (err, response) {
-        if (err) {
-          console.error(err);
-          document.getElementById("protocolVersion").innerText = "Error: Unable to fetch server information.";
-        } else if (!response.version) {
-          document.getElementById("protocolVersion").innerText = "Error: Protocol version not available.";
+    function copyProtocol() {
+      const protocolText = document.getElementById("protocolOutput").innerText;
+      const tempInput = document.createElement("textarea");
+      tempInput.value = protocolText;
+      document.body.appendChild(tempInput);
+      tempInput.select();
+      document.execCommand("copy");
+      document.body.removeChild(tempInput);
+      alert("Protocol Version copied to clipboard!");
+    }
+
+    async function generateCommand() {
+      const serverIP = document.getElementById("textInput").value.trim();
+      const times = document.getElementById("timesInput").value;
+      let username = document.getElementById("usernameInput").value.trim();
+      
+      if (!serverIP || !times) {
+        document.getElementById("commandOutput").innerText = "Please fill in all fields.";
+        return;
+      }
+
+      let command = `mcstress --address ${serverIP}`;
+
+      try {
+        const response = await fetch(`https://api.mcsrvstat.us/2/${serverIP}`);
+        if (!response.ok) throw new Error('Network response was not ok.');
+        const data = await response.json();
+        console.log(data);
+        if (data.protocol !== undefined) {
+          command += ` -protocol ${data.protocol}`;
+          document.getElementById("commandBox").style.display = "block";
         } else {
-          var protocolVersion = response.version.protocol;
-          document.getElementById("protocolVersion").innerText = "Protocol Version: " + protocolVersion;
+          document.getElementById("protocolOutput").innerText = "Error: Protocol version not available.";
+          return;
         }
-      });
+      } catch (error) {
+        console.error(error);
+        document.getElementById("protocolOutput").innerText = "Error: Unable to fetch server information.";
+        return;
+      }
+      
+      command += ` -number ${times}`;
+
+      if (username) {
+        command += ` -username ${username}`;
+      }
+      
+      document.getElementById("commandOutput").innerText = command;
     }
   </script>
 </body>
