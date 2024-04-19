@@ -4,11 +4,51 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Minecraft Server Protocol Version Checker</title>
+  <style>
+    body {
+      background-color: #1e1e1e;
+      color: #ffffff;
+      font-family: Arial, sans-serif;
+    }
+    #container {
+      width: 80%;
+      margin: 0 auto;
+      text-align: center;
+    }
+    #textInput {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: none;
+      border-radius: 5px;
+      background-color: #2e2e2e;
+      color: #ffffff;
+    }
+    #checkButton {
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      color: #ffffff;
+      transition: background-color 0.3s;
+    }
+    #checkButton:hover {
+      background-color: #45a049;
+    }
+    #protocolVersion {
+      font-size: 18px;
+      margin-top: 20px;
+    }
+  </style>
 </head>
 <body>
-  <textarea id="textInput" rows="4" cols="50" placeholder="Paste the text with the Minecraft server IP"></textarea>
-  <button onclick="checkServer()">Check Server</button>
-  <p id="protocolVersion"></p>
+  <div id="container">
+    <h1>Minecraft Server Protocol Version Checker</h1>
+    <textarea id="textInput" rows="4" placeholder="Paste the text with the Minecraft server IP"></textarea>
+    <button id="checkButton" onclick="checkServer()">Check Server</button>
+    <p id="protocolVersion"></p>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/mcstatus"></script>
   <script>
