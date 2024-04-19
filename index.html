@@ -38,6 +38,8 @@
         if (err) {
           console.error(err);
           document.getElementById("protocolVersion").innerText = "Error: Unable to fetch server information.";
+        } else if (!response.version) {
+          document.getElementById("protocolVersion").innerText = "Error: Protocol version not available.";
         } else {
           var protocolVersion = response.version.protocol;
           document.getElementById("protocolVersion").innerText = "Protocol Version: " + protocolVersion;
